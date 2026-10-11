@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16213a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Apuntes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Apuntes Derecho</title>
+<script src="marked.min.js"></script>
+<script src="purify.min.js"></script>
+<style>
+:root{
+  --bg:#f6f3ec; --card:#ffffff; --ink:#16213a; --muted:#6b6f7b; --line:#e3ddd0;
+  --accent:#b8812a; --accent-ink:#fff; --rec:#c0392b; --ok:#2e7d4f; --warn:#b26a00;
+  --radius:16px; --shadow:0 1px 2px rgba(22,33,58,.06),0 4px 14px rgba(22,33,58,.06);
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1524; --card:#18213a; --ink:#ece7dc; --muted:#9aa0ae; --line:#27314d;
+  --accent:#d9a145; --accent-ink:#16213a; --shadow:none;
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 24px)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;gap:8px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+header h1{flex:1;margin:0;font:600 19px/1.25 Georgia,"Times New Roman",serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{border:0;background:transparent;color:var(--ink);font-size:22px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.icon-btn:active{background:var(--line)}
+main{padding:16px;max-width:720px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px}
+.list-item{display:flex;align-items:center;gap:12px;cursor:pointer}
+.list-item .grow{flex:1;min-width:0}
+.title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{color:var(--muted);font-size:14px}
+.btn{border:0;border-radius:14px;padding:13px 18px;font:600 16px system-ui,sans-serif;background:var(--card);color:var(--ink);border:1px solid var(--line);width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.rec{background:var(--rec);color:#fff;border-color:transparent}
+.btn.small{padding:9px 12px;font-size:14px;width:auto}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.stack>*+*{margin-top:10px}
+input,textarea{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:16px system-ui,sans-serif}
+label{display:block;font-size:14px;color:var(--muted);margin:0 0 6px}
+.badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--line);color:var(--ink)}
+.badge.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.badge.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.badge.err{background:color-mix(in srgb,var(--rec) 18%,transparent);color:var(--rec)}
+.empty{text-align:center;color:var(--muted);padding:36px 12px}
+.empty .big{font-size:44px}
+.tabs{display:flex;gap:6px;background:var(--line);padding:4px;border-radius:12px;margin-bottom:12px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--ink);padding:8px;border-radius:9px;font:600 14px system-ui}
+.tabs button.on{background:var(--card);box-shadow:var(--shadow)}
+.md{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.md h1{font:600 22px/1.3 Georgia,serif;margin:4px 0 12px}
+.md h2{font:600 19px/1.3 Georgia,serif;margin:22px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.md h3{font-size:17px;margin:18px 0 6px}
+.md ul,.md ol{padding-left:22px}
+.md table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}
+.md th,.md td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.md th{background:var(--bg)}
+.md blockquote{margin:8px 0;padding:6px 12px;border-left:3px solid var(--accent);color:var(--muted)}
+.pre{white-space:pre-wrap;font-size:15px}
+/* grabación */
+.recview{text-align:center;padding:20px 0}
+.clock{font:600 56px/1 ui-monospace,Menlo,monospace;letter-spacing:1px;margin:18px 0 6px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--rec);margin-right:8px;animation:pulse 1.2s infinite}
+.dot.paused{animation:none;background:var(--muted)}
+@keyframes pulse{50%{opacity:.25}}
+.meter{height:10px;border-radius:10px;background:var(--line);overflow:hidden;margin:18px auto;max-width:320px}
+.meter i{display:block;height:100%;width:0;background:var(--ok);transition:width .08s}
+.fab{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom) + 18px);z-index:6;width:auto;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:90vw;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.notice{border-left:4px solid var(--warn)}
+audio{width:100%;margin-top:6px}
+.muted{color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+</style>
+</head>
+<body>
+<header>
+  <button class="icon-btn" id="back" aria-label="Atrás" hidden>‹</button>
+  <h1 id="htitle">Apuntes Derecho</h1>
+  <button class="icon-btn" id="hbtn" aria-label="Ajustes">⚙️</button>
+</header>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================== Configuración ================== */
+const SEG_MIN = 5;                       // la grabación se guarda en tramos de 5 min
+const GROQ_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
+const GROQ_MODEL = 'whisper-large-v3';
+const CLAUDE_MODEL = 'claude-sonnet-5-5';
+const PROMPT_WHISPER = 'Clase de derecho en Colombia. Constitución Política, Corte Constitucional, sentencia T-, C-, SU-, artículo, ley, decreto, Código Civil, Código General del Proceso, jurisprudencia.';
+const INSTRUCCIONES = `Eres asistente de un estudiante de Derecho en Colombia. Recibes la transcripción automática de una clase.
+Devuelve SOLO Markdown en español con esta estructura:
+
+# {titulo}
+
+## Apuntes por temas
+Organiza el contenido en títulos (###) y subtemas con viñetas. Elimina muletillas, repeticiones y charla fuera de tema.
+Conserva definiciones, ejemplos, distinciones y opiniones del profesor (márcalas como "Según el profesor:").
+No inventes nada que no esté en la transcripción. Si una palabra parece mal transcrita, escribe tu mejor lectura seguida de [verificar].
+
+## Normas y jurisprudencia citadas
+Tabla con columnas: | Norma / Sentencia | Qué se dijo en clase |
+Incluye artículos, leyes, decretos, códigos y sentencias (T-, C-, SU-, etc.) mencionados. Si no hubo ninguna, escríbelo.`;
+
+const cfg = {
+  get groq(){ try{return localStorage.getItem('groqKey')||''}catch{return ''} },
+  get claude(){ try{return localStorage.getItem('claudeKey')||''}catch{return ''} },
+  set(k,v){ try{localStorage.setItem(k,v.trim())}catch{} }
+};
+
+/* ================== Base de datos (en el celular) ================== */
+const db = new Promise((res, rej) => {
+  const r = indexedDB.open('apuntes-derecho', 1);
+  r.onupgradeneeded = () => {
+    const d = r.result;
+    d.createObjectStore('materias', {keyPath:'id'});
+    d.createObjectStore('clases', {keyPath:'id'}).createIndex('materia','materiaId');
+    d.createObjectStore('segmentos', {keyPath:'id'}).createIndex('clase','claseId');
+  };
+  r.onsuccess = () => res(r.result);
+  r.onerror = () => rej(r.error);
+});
+function req(store, mode, fn){
+  return db.then(d => new Promise((res, rej) => {
+    const t = d.transaction(store, mode); const s = t.objectStore(store);
+    const r = fn(s); let out;
+    if (r) r.onsuccess = () => { out = r.result };
+    t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+  }));
+}
+const put = (st,o) => req(st,'readwrite',s=>s.put(o)).then(()=>o);
+const get = (st,id) => req(st,'readonly',s=>s.get(id));
+const all = st => req(st,'readonly',s=>s.getAll());
+const del = (st,id) => req(st,'readwrite',s=>s.delete(id));
+const byIdx = (st,ix,v) => req(st,'readonly',s=>s.index(ix).getAll(v));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ================== Utilidades ================== */
+const $app = document.getElementById('app');
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const md = s => window.marked && window.DOMPurify ? DOMPurify.sanitize(marked.parse(s||'')) : `<div class="pre">${esc(s)}</div>`;
+const fmtFecha = t => new Date(t).toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+const fmtHora = t => new Date(t).toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});
+const fmtDur = s => { s=Math.round(s||0); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return (h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(x).padStart(2,'0'); };
+function toast(msg, ms=2600){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'), ms); }
+function header(title, {back=null, btn='⚙️', onBtn=()=>go('ajustes')}={}){
+  document.getElementById('htitle').textContent = title;
+  const b = document.getElementById('back'); b.hidden = !back; b.onclick = back;
+  const h = document.getElementById('hbtn'); h.textContent = btn; h.hidden = !btn; h.onclick = onBtn;
+}
+function descargar(nombre, texto){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([texto], {type:'text/markdown;charset=utf-8'}));
+  a.download = nombre; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+}
+async function compartir(titulo, texto){
+  if (navigator.share) { try { await navigator.share({title:titulo, text:texto}); return; } catch(e){ if(e.name==='AbortError') return; } }
+  await copiar(texto);
+}
+async function copiar(texto){ try{ await navigator.clipboard.writeText(texto); toast('Copiado ✅'); } catch { toast('No se pudo copiar'); } }
+const ESTADOS = {
+  grabando:['● Grabando','err'], transcribiendo:['Transcribiendo…','warn'], organizando:['Organizando…','warn'],
+  listo:['Listo','ok'], sin_ia:['Sin organizar','warn'], error:['Error','err']
+};
+const badge = e => { const [t,c] = ESTADOS[e]||[e,'']; return `<span class="badge ${c}">${t}</span>`; };
+
+/* ================== Navegación ================== */
+let vista = {nombre:'inicio'};
+function go(nombre, datos={}){ vista = {nombre, ...datos}; history.pushState(vista,''); render(); }
+window.onpopstate = e => {
+  if (rec.activo) { history.pushState(vista,''); toast('Detén la grabación primero'); return; }
+  vista = e.state || {nombre:'inicio'}; render();
+};
+async function render(){
+  window.scrollTo(0,0);
+  const v = vista.nombre;
+  if (v==='inicio') return vInicio();
+  if (v==='materia') return vMateria(vista.id);
+  if (v==='clase') return vClase(vista.id);
+  if (v==='grabar') return vGrabar();
+  if (v==='compilado') return vCompilado(vista.id);
+  if (v==='ajustes') return vAjustes();
+}
+
+/* ================== Vistas ================== */
+async function vInicio(){
+  header('Apuntes Derecho');
+  const [mats, clases] = await Promise.all([all('materias'), all('clases')]);
+  mats.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  let h = '';
+  if (!cfg.groq) h += `<div class="card notice"><b>Falta configurar</b><div class="sub">Agrega tu clave gratuita de Groq para poder transcribir.</div><div style="margin-top:10px"><button class="btn small primary" onclick="go('ajustes')">Configurar</button></div></div>`;
+  if (!mats.length) h += `<div class="empty"><div class="big">📚</div><p>Crea tu primera materia para empezar a grabar clases.</p></div>`;
+  for (const m of mats){
+    const cs = clases.filter(c=>c.materiaId===m.id);
+    const pend = cs.filter(c=>['transcribiendo','organizando'].includes(c.estado)).length;
+    h += `<div class="card list-item" onclick="go('materia',{id:'${m.id}'})">
+      <div style="font-size:26px">📘</div>
+      <div class="grow"><div class="title">${esc(m.nombre)}</div>
+      <div class="sub">${cs.length} ${cs.length===1?'clase':'clases'}${pend?` · ${pend} en proceso`:''}</div></div>
+      <div class="muted">›</div></div>`;
+  }
+  h += `<button class="btn primary" onclick="nuevaMateria()">＋ Nueva materia</button>`;
+  $app.innerHTML = h;
+}
+async function nuevaMateria(){
+  const n = (prompt('Nombre de la materia (ej: Derecho Laboral)')||'').trim();
+  if (!n) return;
+  await put('materias', {id:uid(), nombre:n, creada:Date.now()});
+  render();
+}
+
+async function vMateria(id){
+  const m = await get('materias', id);
+  if (!m) return go('inicio');
+  header(m.nombre, {back:()=>history.back(), btn:'⋯', onBtn:()=>menuMateria(m)});
+  const cs = (await byIdx('clases','materia',id)).sort((a,b)=>b.fecha-a.fecha);
+  let h = `<button class="btn rec" style="padding:18px;font-size:18px" onclick="prepararGrabacion('${id}')">🎙️ Grabar clase</button><div style="height:16px"></div>`;
+  if (!cs.length) h += `<div class="empty"><div class="big">🎧</div><p>Aún no hay clases. Toca <b>Grabar clase</b> cuando empiece la clase.</p></div>`;
+  for (const c of cs){
+    h += `<div class="card list-item" onclick="go('clase',{id:'${c.id}'})">
+      <div class="grow"><div class="title">${esc(c.tema||'Clase')}</div>
+      <div class="sub">${fmtFecha(c.fecha)} · ${fmtDur(c.duracion)}</div></div>${badge(c.estado)}</div>`;
+  }
+  if (cs.some(c=>c.apuntes)) h += `<div style="height:6px"></div><button class="btn" onclick="go('compilado',{id:'${id}'})">📦 Compilado para el parcial</button>`;
+  $app.innerHTML = h;
+}
+async function menuMateria(m){
+  const op = prompt(`Escribe un número:\n1 = Renombrar\n2 = Eliminar materia (y todas sus clases)`);
+  if (op==='1'){ const n=(prompt('Nuevo nombre', m.nombre)||'').trim(); if(n){ m.nombre=n; await put('materias',m); render(); } }
+  if (op==='2'){
+    if (!confirm(`¿Eliminar "${m.nombre}" con todas sus clases, audios y apuntes? No se puede deshacer.`)) return;
+    for (const c of await byIdx('clases','materia',m.id)) await borrarClase(c.id);
+    await del('materias', m.id); history.back();
+  }
+}
+
+async function vClase(id){
+  const c = await get('clases', id);
+  if (!c) return history.back();
+  const m = await get('materias', c.materiaId);
+  header(c.tema||'Clase', {back:()=>history.back(), btn:'🗑️', onBtn:async()=>{
+    if (confirm('¿Eliminar esta clase con su audio y apuntes?')){ await borrarClase(id); history.back(); }
+  }});
+  const segs = (await byIdx('segmentos','clase',id)).sort((a,b)=>a.n-b.n);
+  const tab = vista.tab || 'apuntes';
+  const listos = segs.filter(s=>s.estado==='listo').length;
+  const errores = segs.filter(s=>s.estado==='error');
+  let h = `<div class="sub" style="margin-bottom:10px">${esc(m?.nombre)} · ${fmtFecha(c.fecha)} ${fmtHora(c.fecha)} · ${fmtDur(c.duracion)} ${badge(c.estado)}</div>`;
+  if (c.estado==='transcribiendo') h += `<div class="card">Transcribiendo: ${listos} de ${segs.length} tramos listos.<div class="sub">Puedes salir de esta pantalla; sigue avanzando mientras la app esté abierta.</div></div>`;
+  if (c.estado==='organizando') h += `<div class="card">🤖 La IA está organizando los apuntes…</div>`;
+  if (errores.length || c.estado==='error') h += `<div class="card notice"><b>Hubo un problema</b><div class="sub">${esc(c.error || errores[0]?.error || '')}</div><div style="margin-top:10px"><button class="btn small primary" onclick="reintentar('${id}')">Reintentar</button></div></div>`;
+  h += `<div class="tabs">
+    <button class="${tab==='apuntes'?'on':''}" onclick="vista.tab='apuntes';render()">Apuntes</button>
+    <button class="${tab==='texto'?'on':''}" onclick="vista.tab='texto';render()">Transcripción</button>
+    <button class="${tab==='audio'?'on':''}" onclick="vista.tab='audio';render()">Audio</button></div>`;
+  const transcripcion = segs.map(s=>s.texto||'').join(' ').trim();
+  if (tab==='apuntes'){
+    if (c.apuntes){
+      h += `<div class="card md">${md(c.apuntes)}</div>
+      <div class="row"><button class="btn" onclick="accion('${id}','compartir')">Compartir</button><button class="btn" onclick="accion('${id}','descargar')">Descargar</button></div>
+      <div style="height:10px"></div><button class="btn" onclick="organizarDeNuevo('${id}')">🔄 Organizar de nuevo con IA</button>`;
+    } else if (c.estado==='sin_ia'){
+      h += `<div class="card">La transcripción está lista, pero falta la clave de Claude para organizarla.<div style="margin-top:10px" class="row"><button class="btn small primary" onclick="go('ajustes')">Agregar clave</button><button class="btn small" onclick="organizarDeNuevo('${id}')">Organizar ahora</button></div></div>`;
+    } else h += `<div class="empty"><div class="big">⏳</div><p>Los apuntes aparecerán aquí cuando termine el proceso.</p></div>`;
+  }
+  if (tab==='texto'){
+    h += transcripcion ? `<div class="card pre">${esc(transcripcion)}</div><button class="btn" onclick="accion('${id}','copiarTexto')">Copiar transcripción</button>` : `<div class="empty"><p>Aún no hay texto.</p></div>`;
+  }
+  if (tab==='audio'){
+    const conAudio = segs.filter(s=>s.blob);
+    if (!conAudio.length) h += `<div class="empty"><p>El audio de esta clase fue borrado o no existe.</p></div>`;
+    else {
+      h += `<div class="card">`;
+      conAudio.forEach(s=>{ h += `<div class="sub">Tramo ${s.n+1} · ${fmtDur(s.dur)}</div><audio controls preload="none" data-seg="${s.id}"></audio><div style="height:10px"></div>`; });
+      h += `</div><button class="btn" onclick="borrarAudio('${id}')">Borrar audio (conservar apuntes y texto)</button>`;
+    }
+  }
+  $app.innerHTML = h;
+  if (tab==='audio') for (const el of $app.querySelectorAll('audio[data-seg]')){
+    const s = segs.find(x=>x.id===el.dataset.seg); el.src = URL.createObjectURL(s.blob);
+  }
+}
+async function accion(id, que){
+  const c = await get('clases', id); const segs=(await byIdx('segmentos','clase',id)).sort((a,b)=>a.n-b.n);
+  const nombre = `${(c.tema||'Clase').replace(/[\\/:*?"<>|]/g,'')} ${new Date(c.fecha).toISOString().slice(0,10)}.md`;
+  if (que==='compartir') compartir(c.tema||'Apuntes', c.apuntes);
+  if (que==='descargar') descargar(nombre, c.apuntes);
+  if (que==='copiarTexto') copiar(segs.map(s=>s.texto||'').join(' ').trim());
+}
+async function borrarClase(id){
+  for (const s of await byIdx('segmentos','clase',id)) await del('segmentos', s.id);
+  await del('clases', id);
+}
+async function borrarAudio(id){
+  if (!confirm('¿Borrar el audio de esta clase? Los apuntes y la transcripción se conservan.')) return;
+  for (const s of await byIdx('segmentos','clase',id)){ if (s.estado==='listo'){ delete s.blob; await put('segmentos', s); } }
+  toast('Audio borrado'); render();
+}
+async function reintentar(id){
+  for (const s of await byIdx('segmentos','clase',id)) if (s.estado==='error'){ s.estado='pendiente'; s.error=''; await put('segmentos', s); }
+  const c = await get('clases', id);
+  if (c.estado==='error'){ c.estado='transcribiendo'; c.error=''; await put('clases', c); }
+  procesarCola(); render();
+}
+async function organizarDeNuevo(id){
+  if (!cfg.claude) { toast('Falta la clave de Claude en Ajustes'); return go('ajustes'); }
+  const c = await get('clases', id); c.estado='transcribiendo'; c.error=''; await put('clases', c);
+  procesarCola(); render();
+}
+
+async function vCompilado(id){
+  const m = await get('materias', id);
+  header('Compilado', {back:()=>history.back(), btn:null});
+  const cs = (await byIdx('clases','materia',id)).filter(c=>c.apuntes).sort((a,b)=>a.fecha-b.fecha);
+  const texto = `# ${m.nombre} — Todas las clases\n\n` + cs.map(c=>c.apuntes).join('\n\n---\n\n');
+  vista.texto = texto;
+  $app.innerHTML = `<div class="row" style="margin-bottom:12px"><button class="btn" onclick="compartir('${esc(m.nombre)}', vista.texto)">Compartir</button><button class="btn" onclick="descargar('Compilado ${esc(m.nombre).replace(/'/g,'')}.md', vista.texto)">Descargar</button></div>
+  <div class="sub" style="margin-bottom:10px">${cs.length} clases en orden, de la primera a la última.</div>
+  <div class="card md">${md(texto)}</div>`;
+}
+
+function vAjustes(){
+  header('Ajustes', {back:()=>history.back(), btn:null});
+  $app.innerHTML = `<div class="stack">
+  <div class="card stack">
+    <div><b>1. Transcripción (Groq, gratis)</b><div class="sub">Crea la clave en console.groq.com → API Keys.</div></div>
+    <input id="kg" type="password" autocomplete="off" placeholder="gsk_…" value="${esc(cfg.groq)}">
+  </div>
+  <div class="card stack">
+    <div><b>2. Organizar apuntes (Claude)</b><div class="sub">Clave de console.anthropic.com → API Keys. Sin ella solo tendrás la transcripción.</div></div>
+    <input id="kc" type="password" autocomplete="off" placeholder="sk-ant-…" value="${esc(cfg.claude)}">
+  </div>
+  <button class="btn primary" onclick="guardarClaves()">Guardar</button>
+  <div class="sub">Las claves quedan guardadas solo en este celular.</div>
+  <hr>
+  <div class="card stack"><b>Respaldo</b><div class="sub">Descarga todos tus apuntes y transcripciones en un archivo (sin audio).</div>
+  <button class="btn" onclick="respaldo()">Descargar respaldo</button><div class="sub" id="espacio"></div></div>
+  </div>`;
+  navigator.storage?.estimate?.().then(e=>{ const el=document.getElementById('espacio'); if(el) el.textContent=`Espacio usado por la app: ${(e.usage/1048576).toFixed(1)} MB`; });
+}
+function guardarClaves(){
+  cfg.set('groqKey', document.getElementById('kg').value);
+  cfg.set('claudeKey', document.getElementById('kc').value);
+  toast('Claves guardadas ✅'); procesarCola(); history.back();
+}
+async function respaldo(){
+  const [mats, clases, segs] = await Promise.all([all('materias'), all('clases'), all('segmentos')]);
+  let out = `# Respaldo Apuntes Derecho — ${new Date().toLocaleDateString('es-CO')}\n\n`;
+  for (const m of mats){
+    out += `# ${m.nombre}\n\n`;
+    for (const c of clases.filter(c=>c.materiaId===m.id).sort((a,b)=>a.fecha-b.fecha)){
+      const t = segs.filter(s=>s.claseId===c.id).sort((a,b)=>a.n-b.n).map(s=>s.texto||'').join(' ');
+      out += `## ${c.tema||'Clase'} — ${fmtFecha(c.fecha)}\n\n${c.apuntes||''}\n\n### Transcripción\n\n${t}\n\n---\n\n`;
+    }
+  }
+  descargar(`Respaldo apuntes ${new Date().toISOString().slice(0,10)}.md`, out);
+}
+
+/* ================== Grabación ================== */
+const rec = {activo:false};
+async function prepararGrabacion(materiaId){
+  if (!cfg.groq && !confirm('Aún no has puesto la clave de Groq. Puedes grabar igual y transcribir después. ¿Continuar?')) return;
+  const tema = prompt('Tema de la clase (opcional)', '') ;
+  if (tema === null) return;
+  try { await iniciarGrabacion(materiaId, tema.trim()); }
+  catch(e){ console.error(e); alert('No se pudo usar el micrófono. Revisa que la app tenga permiso de micrófono.\n\n' + e.message); }
+}
+function tipoAudio(){
+  for (const t of ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'])
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+  return '';
+}
+async function iniciarGrabacion(materiaId, tema){
+  const stream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1, echoCancellation:false, noiseSuppression:true, autoGainControl:true}});
+  navigator.storage?.persist?.();
+  const clase = {id:uid(), materiaId, tema: tema || 'Clase', fecha:Date.now(), estado:'grabando', duracion:0};
+  await put('clases', clase);
+  Object.assign(rec, {activo:true, pausado:false, stream, clase, n:0, mime:tipoAudio(), acumulado:0, desde:Date.now(), segDesde:Date.now()});
+  // medidor de nivel
+  try {
+    rec.ctx = new AudioContext(); rec.ctx.resume?.(); const an = rec.ctx.createAnalyser(); an.fftSize = 512;
+    rec.ctx.createMediaStreamSource(stream).connect(an); rec.an = an;
+  } catch {}
+  await pantallaEncendida();
+  nuevoTramo();
+  rec.reloj = setInterval(tick, 250);
+  go('grabar');
+}
+function transcurrido(){ return rec.acumulado + (rec.pausado ? 0 : (Date.now()-rec.desde)/1000); }
+function nuevoTramo(){
+  const mr = new MediaRecorder(rec.stream, rec.mime ? {mimeType:rec.mime, audioBitsPerSecond:32000} : undefined);
+  const partes = []; const n = rec.n++; const inicio = Date.now(); const claseId = rec.clase.id;
+  mr.ondataavailable = e => { if (e.data && e.data.size) partes.push(e.data); };
+  mr.onstop = async () => {
+    const blob = new Blob(partes, {type: mr.mimeType || rec.mime || 'audio/webm'});
+    await put('segmentos', {id:`${claseId}-${String(n).padStart(3,'0')}`, claseId, n, blob, dur:(Date.now()-inicio)/1000, estado:'pendiente'});
+    procesarCola();
+  };
+  mr.start(1000);
+  rec.mr = mr; rec.segDesde = Date.now();
+  clearTimeout(rec.corte);
+  rec.corte = setTimeout(rotarTramo, SEG_MIN*60*1000);
+}
+function rotarTramo(){
+  if (!rec.activo || rec.pausado) return;
+  const viejo = rec.mr; nuevoTramo(); viejo.stop();   // el nuevo arranca antes de cerrar el viejo: no se pierde audio
+}
+function pausar(){
+  if (!rec.activo) return;
+  if (!rec.pausado){
+    rec.acumulado = transcurrido(); rec.pausado = true; clearTimeout(rec.corte); rec.mr.stop();
+  } else {
+    rec.pausado = false; rec.desde = Date.now(); nuevoTramo();
+  }
+  vGrabar();
+}
+async function detener(){
+  if (!rec.activo) return;
+  if (!confirm('¿Terminar la grabación de esta clase?')) return;
+  clearTimeout(rec.corte); clearInterval(rec.reloj);
+  const dur = transcurrido();
+  if (!rec.pausado) await new Promise(r => { rec.mr.addEventListener('stop', ()=>setTimeout(r,300), {once:true}); rec.mr.stop(); });
+  rec.stream.getTracks().forEach(t=>t.stop());
+  try{ rec.ctx?.close(); }catch{}
+  try{ await rec.wake?.release(); }catch{}
+  const c = await get('clases', rec.clase.id); c.duracion = dur; c.estado = 'transcribiendo'; await put('clases', c);
+  rec.activo = false;
+  procesarCola();
+  vista = {nombre:'clase', id:c.id}; history.replaceState(vista,''); render();
+  toast('Clase guardada. Transcribiendo… ✅', 3500);
+}
+async function pantallaEncendida(){
+  try { rec.wake = await navigator.wakeLock?.request('screen'); } catch {}
+}
+document.addEventListener('visibilitychange', () => { if (rec.activo && document.visibilityState==='visible') pantallaEncendida(); });
+window.addEventListener('beforeunload', e => { if (rec.activo){ e.preventDefault(); e.returnValue=''; } });
+
+async function vGrabar(){
+  if (!rec.activo) return go('inicio');
+  const m = await get('materias', rec.clase.materiaId);
+  header(m?.nombre||'Grabando', {btn:null});
+  $app.innerHTML = `<div class="recview">
+    <div class="sub">${esc(rec.clase.tema)}</div>
+    <div class="clock" id="clock">0:00</div>
+    <div><span class="dot ${rec.pausado?'paused':''}"></span><span id="estadoRec">${rec.pausado?'En pausa':'Grabando'}</span></div>
+    <div class="meter"><i id="lvl"></i></div>
+    <div class="sub" id="tramos">Se guarda automáticamente cada ${SEG_MIN} minutos.</div>
+    <div style="height:28px"></div>
+    <div class="row"><button class="btn" onclick="pausar()">${rec.pausado?'▶︎ Continuar':'⏸ Pausa'}</button>
+    <button class="btn rec" onclick="detener()">■ Terminar</button></div>
+    <div style="height:24px"></div>
+    <div class="card notice" style="text-align:left"><b>Deja la app abierta</b><div class="sub">La pantalla se mantiene encendida sola. Puedes bajarle el brillo y poner el celular boca abajo, pero no cierres la app ni bloquees el celular.</div></div>
+  </div>`;
+  tick();
+}
+const buf = new Uint8Array(512);
+function tick(){
+  const el = document.getElementById('clock'); if (el) el.textContent = fmtDur(transcurrido());
+  const lv = document.getElementById('lvl');
+  if (lv && rec.an){
+    rec.an.getByteTimeDomainData(buf); let p=0; for (const v of buf) p=Math.max(p, Math.abs(v-128));
+    lv.style.width = (rec.pausado ? 0 : Math.min(100, p/90*100)) + '%';
+  }
+  const t = document.getElementById('tramos');
+  if (t) t.textContent = `Tramos guardados: ${Math.max(0, rec.n - (rec.pausado?0:1))} · se guarda cada ${SEG_MIN} min`;
+}
+
+/* ================== Cola: transcribir y organizar ================== */
+let trabajando = false, otraVez = false;
+async function procesarCola(){
+  if (trabajando){ otraVez = true; return; }
+  trabajando = true;
+  try {
+    do {
+      otraVez = false;
+      if (!navigator.onLine) break;
+      // 1) transcribir tramos pendientes
+      if (cfg.groq){
+        const pend = (await all('segmentos')).filter(s=>s.estado==='pendiente').sort((a,b)=>a.id.localeCompare(b.id));
+        for (const s of pend){
+          try {
+            s.texto = await transcribir(s); s.estado = 'listo'; s.error = '';
+          } catch(e){
+            if (/ 429/.test(e.message)){            // límite gratuito por minuto: esperar y seguir solo
+              setTimeout(procesarCola, 60000); break;
+            }
+            s.estado = 'error'; s.error = e.message;
+            const c = await get('clases', s.claseId);
+            if (c && c.estado!=='grabando'){ c.estado='error'; c.error='Transcripción: '+e.message; await put('clases', c); }
+          }
+          await put('segmentos', s); refrescar(s.claseId);
+        }
+      }
+      // 2) organizar clases cuya transcripción terminó
+      for (const c of (await all('clases')).filter(c=>c.estado==='transcribiendo')){
+        const segs = await byIdx('segmentos','clase',c.id);
+        if (!segs.length || !segs.every(s=>s.estado==='listo')) continue;
+        const texto = segs.sort((a,b)=>a.n-b.n).map(s=>s.texto||'').join(' ').trim();
+        if (!texto){ c.estado='listo'; c.apuntes = `# ${c.tema}\n\n_No se detectó voz en la grabación._`; await put('clases', c); refrescar(c.id); continue; }
+        if (!cfg.claude){ c.estado='sin_ia'; await put('clases', c); refrescar(c.id); continue; }
+        c.estado='organizando'; await put('clases', c); refrescar(c.id);
+        try {
+          const m = await get('materias', c.materiaId);
+          c.apuntes = await organizar(texto, `${m?.nombre||''} — ${c.tema} (${new Date(c.fecha).toLocaleDateString('es-CO')})`);
+          c.estado = 'listo'; c.error = '';
+        } catch(e){ c.estado='error'; c.error='Organizar con IA: '+e.message; }
+        await put('clases', c); refrescar(c.id);
+      }
+    } while (otraVez);
+  } finally { trabajando = false; }
+}
+function refrescar(claseId){
+  if (rec.activo && vista.nombre==='grabar') return;
+  if ((vista.nombre==='clase' && vista.id===claseId) || vista.nombre==='materia' || vista.nombre==='inicio') render();
+}
+async function transcribir(s){
+  if (!s.blob || s.blob.size < 3000) return '';
+  const ext = (s.blob.type.includes('mp4') ? 'm4a' : s.blob.type.includes('ogg') ? 'ogg' : 'webm');
+  const prev = s.n>0 ? (await get('segmentos', `${s.claseId}-${String(s.n-1).padStart(3,'0')}`))?.texto || '' : '';
+  const fd = new FormData();
+  fd.append('file', s.blob, `tramo${s.n}.${ext}`);
+  fd.append('model', GROQ_MODEL);
+  fd.append('language', 'es');
+  fd.append('response_format', 'text');
+  fd.append('temperature', '0');
+  fd.append('prompt', (PROMPT_WHISPER + ' ' + prev.slice(-300)).slice(-600));
+  const r = await fetch(GROQ_URL, {method:'POST', headers:{Authorization:'Bearer '+cfg.groq}, body:fd});
+  if (!r.ok){ let m=''; try{ m=(await r.json()).error?.message }catch{}; throw new Error(`Groq ${r.status}${m?': '+m:''}`); }
+  return (await r.text()).trim();
+}
+async function organizar(texto, titulo){
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'content-type':'application/json','x-api-key':cfg.claude,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body: JSON.stringify({model:CLAUDE_MODEL, max_tokens:12000, system:INSTRUCCIONES.replace('{titulo}', titulo),
+      messages:[{role:'user', content:'Transcripción de la clase:\n\n'+texto}]})
+  });
+  if (!r.ok){ let m=''; try{ m=(await r.json()).error?.message }catch{}; throw new Error(`Claude ${r.status}${m?': '+m:''}`); }
+  const j = await r.json();
+  return j.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+}
+window.addEventListener('online', procesarCola);
+
+/* ================== Arranque ================== */
+(async () => {
+  // si la app se cerró en plena grabación, esa clase pasa a transcribirse con lo que alcanzó a guardar
+  for (const c of await all('clases')) if (c.estado==='grabando'){
+    const segs = await byIdx('segmentos','clase',c.id);
+    c.duracion = segs.reduce((a,s)=>a+(s.dur||0),0); c.estado = segs.length ? 'transcribiendo' : 'error';
+    if (!segs.length) c.error = 'La app se cerró antes de guardar el primer tramo.';
+    await put('clases', c);
+  }
+  history.replaceState(vista,''); render(); procesarCola();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
